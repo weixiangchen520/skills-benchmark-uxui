@@ -1,0 +1,64 @@
+task_id: U01en_slides_pitch
+task_name: "Pitch deck slides for a seed-stage startup"
+version: "1.0"
+category: slides
+difficulty: medium
+tags: [slides, web, general]
+language: en
+
+prompt:
+  text: |
+    Build a 10-slide investor pitch deck (HTML, self-contained) for a startup
+    called "Harbor" that sells an API for tidal-energy forecasting. Cover:
+    problem, solution, market, product, traction, business model, team,
+    financials, ask, and a closing slide. Use a coherent visual system,
+    readable typography, and consistent spacing. Output a single index.html.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+
+scoring_components:
+  - name: content_completeness
+    weight: 0.30
+    check:
+      type: llm_judge
+      description: "All 10 required slides are present and on-topic."
+  - name: visual_system
+    weight: 0.40
+    check:
+      type: visual_grader
+      description: "Coherent color/type/spacing; consistent across slides."
+  - name: readability
+    weight: 0.20
+    check:
+      type: visual_grader
+      description: "Legible at projector scale; no wall-of-text slides."
+  - name: runs_standalone
+    weight: 0.10
+    check:
+      type: static
+      artifact: index.html
+      assertions: [exists, self_contained_html]
+      description: "index.html opens with no external network dependencies."
+
+safety_checks: []
+expected_actions:
+  - emit a single self-contained index.html
+
+judge_rubric: |
+  Grade the deck as an investor would: does it tell a coherent story, look
+  professional, and avoid obvious design errors (low contrast, misaligned
+  columns, inconsistent fonts)?
+
+reference_solution: |
+  Single index.html with 10 <section> slides, a shared CSS block, a 16:9
+  viewport, and keyboard arrow navigation.
+
+primary_dimensions:
+  - completion
+  - robustness

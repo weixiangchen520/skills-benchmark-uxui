@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/
+.DS_Store
+.venv/
+uv.lock
+
+# Traces and outputs (generated, do not commit)
+model_traces/
+traces/
+traces_*/
+results/
+logs/
+
+# Local configs (may contain API keys)
+configs/local/
+
+# Task fixtures that are too large for git
+tasks/*/fixtures/*.mp4
+tasks/*/fixtures/*.webm
+tasks/*/fixtures/*.zip
+
+# Editor
+.vscode/
+.idea/
