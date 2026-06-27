@@ -1,4 +1,6 @@
 from skills_benchmark_uxui.cli import main
+from skills_benchmark_uxui.models.scoring import Verdict
+from skills_benchmark_uxui.results import write_verdict
 
 
 def test_score_artifact_writes_trace_dir(tmp_path) -> None:
@@ -68,3 +70,35 @@ grader = DemoGrader
     assert code == 0
     assert trace_path.exists()
     assert '"final_artifact_path": "index.html"' in trace_path.read_text(encoding="utf-8")
+
+
+def test_summarize_results_includes_suites_dir(tmp_path, capsys) -> None:
+    verdicts_path = tmp_path / "verdicts.jsonl"
+    write_verdict(verdicts_path, Verdict(task_id="U01en_demo", trial=1, score=1.0, passed=True))
+    suites_dir = tmp_path / "suites"
+    suites_dir.mkdir()
+    (suites_dir / "uxui_demo.yaml").write_text(
+        """
+suite_id: uxui_demo
+suite_name: UX/UI Demo
+tasks:
+  - U01en_demo
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    code = main(
+        [
+            "summarize-results",
+            str(verdicts_path),
+            "--required-trials",
+            "1",
+            "--format",
+            "markdown",
+            "--suites-dir",
+            str(suites_dir),
+        ]
+    )
+
+    assert code == 0
+    assert "| `uxui_demo` | 1/1 | yes | 1.000 | 1.000 |  |" in capsys.readouterr().out

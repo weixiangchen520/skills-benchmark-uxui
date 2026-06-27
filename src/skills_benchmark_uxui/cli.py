@@ -20,6 +20,7 @@ from .models.task import load_task
 from .results import (
     default_trace_path,
     load_verdicts,
+    summarize_by_suite,
     summaries_to_json,
     summaries_to_markdown,
     summarize_by_task,
@@ -85,10 +86,17 @@ def _cmd_score_artifact(args: argparse.Namespace) -> int:
 def _cmd_summarize_results(args: argparse.Namespace) -> int:
     verdicts = load_verdicts(Path(args.verdicts_jsonl))
     summaries = summarize_by_task(verdicts, required_trials=args.required_trials)
+    suite_summaries = None
+    if args.suites_dir:
+        from .models.suite import load_suite
+        from .suites_loader import iter_suite_files
+
+        suites = [load_suite(path) for path in iter_suite_files(Path(args.suites_dir))]
+        suite_summaries = summarize_by_suite(suites, summaries)
     if args.format == "markdown":
-        print(summaries_to_markdown(summaries), end="")
+        print(summaries_to_markdown(summaries, suite_summaries=suite_summaries), end="")
     else:
-        print(summaries_to_json(summaries))
+        print(summaries_to_json(summaries, suite_summaries=suite_summaries))
     return 0
 
 
@@ -131,6 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("verdicts_jsonl")
     r.add_argument("--required-trials", type=int, default=3)
     r.add_argument("--format", choices=["json", "markdown"], default="json")
+    r.add_argument("--suites-dir", default=None, help="Optional suites directory to include")
     r.set_defaults(func=_cmd_summarize_results)
     return parser
 

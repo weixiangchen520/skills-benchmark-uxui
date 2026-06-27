@@ -6,8 +6,10 @@ import json
 from collections import defaultdict
 from pathlib import Path
 import re
+from statistics import mean
 
-from .models.scoring import RunSummary, Verdict, aggregate_verdicts
+from .models.scoring import RunSummary, SuiteSummary, Verdict, aggregate_verdicts
+from .models.suite import Suite
 from .models.trace import Trace
 
 _PATH_SAFE = re.compile(r"[^A-Za-z0-9._-]+")
@@ -66,16 +68,68 @@ def summarize_by_task(
     }
 
 
-def summaries_to_json(summaries: dict[str, RunSummary]) -> str:
+def summarize_suite(suite: Suite, summaries: dict[str, RunSummary]) -> SuiteSummary:
+    task_summaries = {
+        task_id: summaries[task_id]
+        for task_id in suite.tasks
+        if task_id in summaries
+    }
+    missing_tasks = [task_id for task_id in suite.tasks if task_id not in summaries]
+    if task_summaries:
+        success_rate = round(mean(summary.success_rate for summary in task_summaries.values()), 6)
+        mean_score = round(mean(summary.mean_score for summary in task_summaries.values()), 6)
+    else:
+        success_rate = 0.0
+        mean_score = 0.0
+
+    return SuiteSummary(
+        suite_id=suite.suite_id,
+        suite_name=suite.suite_name,
+        tasks=len(suite.tasks),
+        pass_k=not missing_tasks and all(summary.pass_k for summary in task_summaries.values()),
+        success_rate=success_rate,
+        mean_score=mean_score,
+        missing_tasks=missing_tasks,
+        task_summaries=task_summaries,
+    )
+
+
+def summarize_by_suite(
+    suites: list[Suite],
+    summaries: dict[str, RunSummary],
+) -> dict[str, SuiteSummary]:
+    return {
+        suite.suite_id: summarize_suite(suite, summaries)
+        for suite in sorted(suites, key=lambda item: item.suite_id)
+    }
+
+
+def summaries_to_json(
+    summaries: dict[str, RunSummary],
+    suite_summaries: dict[str, SuiteSummary] | None = None,
+) -> str:
+    task_payload = {task_id: summary.model_dump() for task_id, summary in summaries.items()}
+    payload: dict[str, object] = task_payload
+    if suite_summaries:
+        payload = {
+            "tasks": task_payload,
+            "suites": {
+                suite_id: summary.model_dump()
+                for suite_id, summary in suite_summaries.items()
+            },
+        }
     return json.dumps(
-        {task_id: summary.model_dump() for task_id, summary in summaries.items()},
+        payload,
         ensure_ascii=False,
         indent=2,
         default=str,
     )
 
 
-def summaries_to_markdown(summaries: dict[str, RunSummary]) -> str:
+def summaries_to_markdown(
+    summaries: dict[str, RunSummary],
+    suite_summaries: dict[str, SuiteSummary] | None = None,
+) -> str:
     lines = [
         "# Benchmark Summary",
         "",
@@ -88,6 +142,25 @@ def summaries_to_markdown(summaries: dict[str, RunSummary]) -> str:
             f"| `{task_id}` | {summary.trials}/{summary.required_trials} | {pass_k} | "
             f"{summary.success_rate:.3f} | {summary.mean_score:.3f} |"
         )
+
+    if suite_summaries:
+        lines.extend(
+            [
+                "",
+                "## Suite Summary",
+                "",
+                "| Suite | Tasks | Pass^k | Success Rate | Mean Score | Missing Tasks |",
+                "|---|---:|---:|---:|---:|---|",
+            ]
+        )
+        for suite_id, summary in suite_summaries.items():
+            pass_k = "yes" if summary.pass_k else "no"
+            missing = ", ".join(summary.missing_tasks) if summary.missing_tasks else ""
+            lines.append(
+                f"| `{suite_id}` | {len(summary.task_summaries)}/{summary.tasks} | "
+                f"{pass_k} | {summary.success_rate:.3f} | "
+                f"{summary.mean_score:.3f} | {missing} |"
+            )
 
     lines.extend(["", "## Component Pass Rates", ""])
     for task_id, summary in summaries.items():

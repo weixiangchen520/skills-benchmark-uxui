@@ -106,6 +106,17 @@ class RunSummary(BaseModel):
     verdicts: list[Verdict] = Field(default_factory=list)
 
 
+class SuiteSummary(BaseModel):
+    suite_id: str
+    suite_name: str
+    tasks: int
+    pass_k: bool
+    success_rate: float
+    mean_score: float
+    missing_tasks: list[str] = Field(default_factory=list)
+    task_summaries: dict[str, RunSummary] = Field(default_factory=dict)
+
+
 def aggregate_verdicts(verdicts: list[Verdict], required_trials: int = 3) -> RunSummary:
     """Aggregate independent trial verdicts using Pass^k semantics."""
     if not verdicts:

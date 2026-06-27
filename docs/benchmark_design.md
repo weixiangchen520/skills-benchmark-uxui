@@ -91,7 +91,8 @@ Research date: 2026-06-27.
 8. Suites are validated separately from tasks.
    Suite YAML files group comparable task IDs and primary metrics. This mirrors
    HELM/lm-evaluation-harness grouping while keeping task definitions
-   independently reusable.
+   independently reusable. Result summaries can optionally include suite-level
+   Pass^k, success rate, mean score, and missing-task accounting.
 
 9. Visual grading gets a render snapshot before subjective judging.
    HTML artifacts are opened with Playwright when available, screenshots are
@@ -111,14 +112,14 @@ Research date: 2026-06-27.
   traces currently come from scored artifacts rather than live model sessions.
 - Browser/Playwright rendering is optional; the package does not yet install
   browser binaries or persist Playwright trace archives automatically.
-- Suite-level Markdown/JSON reports exist for verdict JSONL, but no web
-  leaderboard exists yet.
+- Suite-level Markdown/JSON reports exist for verdict JSONL, but no weighted
+  suite scoring or web leaderboard exists yet.
 
 ## Near-Term Implementation Path
 
 1. Meta-evaluate the judge prompt against labelled artifacts.
 2. Add Playwright trace archive capture alongside screenshots.
-3. Add suite-level aggregation across task weights and model IDs.
+3. Add weighted suite scoring and model-ID grouping.
 4. Add sandbox adapters for local, Docker, and browser-backed tasks.
 5. Wire the runner to provider calls while emitting the same trace schema.
 
