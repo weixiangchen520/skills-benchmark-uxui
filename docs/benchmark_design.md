@@ -25,6 +25,14 @@ Research date: 2026-06-27.
   loops, text/browser observations, trajectories, and task-specific evaluators.
   Sources: https://github.com/web-arena-x/webarena and
   https://github.com/ServiceNow/BrowserGym
+- AgentLab: experiment management on BrowserGym benchmarks, reproducible
+  parallel runs, screenshots/actions in result objects, and analysis tooling for
+  trajectories.
+  Source: https://github.com/ServiceNow/AgentLab
+- VisualWebArena: multimodal web-agent tasks that extend WebArena-style
+  execution evaluation with visual observations and Playwright trace files for
+  human trajectories.
+  Source: https://github.com/web-arena-x/visualwebarena
 - OSWorld: computer-use tasks in real VM/desktop environments, parallel
   execution, screenshots/actions/video traces, and success-rate summaries.
   Source: https://github.com/xlang-ai/OSWorld
@@ -83,23 +91,31 @@ Research date: 2026-06-27.
    HELM/lm-evaluation-harness grouping while keeping task definitions
    independently reusable.
 
+9. Visual grading gets a render snapshot before subjective judging.
+   HTML artifacts are opened with Playwright when available, screenshots are
+   stored under the run directory, and DOM metrics such as sections, headings,
+   body text, media count, and horizontal overflow are captured. If Playwright
+   or a browser is unavailable, the harness falls back to a standard-library
+   HTML parser so CI can still run deterministic structure checks.
+
 ## Current Gaps
 
 - `llm_judge` now has a strict JSON protocol and OpenAI-compatible adapter, but
   benchmark-quality prompt calibration and judge meta-evaluation are still
   missing.
-- `visual_grader` currently uses the same text artifact judge path; it does not
-  yet capture rendered screenshots.
+- `visual_grader` now captures render snapshots when Playwright is available,
+  but screenshot quality is not yet compared against labelled references.
 - The agent runner is not wired to provider calls or sandbox execution.
-- Browser/Playwright rendering checks are not implemented yet.
+- Browser/Playwright rendering is optional; the package does not yet install
+  browser binaries or persist Playwright trace archives automatically.
 - Suite-level Markdown/JSON reports exist for verdict JSONL, but no web
   leaderboard exists yet.
 
 ## Near-Term Implementation Path
 
 1. Meta-evaluate the judge prompt against labelled artifacts.
-2. Add Playwright rendering for HTML artifacts and screenshot capture.
-3. Persist full agent traces under `traces/`, not only verdicts.
+2. Persist full agent traces under `traces/`, not only verdicts.
+3. Add Playwright trace archive capture alongside screenshots.
 4. Add suite-level aggregation across task weights and model IDs.
 5. Add sandbox adapters for local, Docker, and browser-backed tasks.
 

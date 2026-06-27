@@ -1,9 +1,9 @@
 # Skills-Benchmark-UXUI
 
 > Trustworthy evaluation of autonomous agents on UX/UI skills.
-> Pass^3 · Completion · Safety · Robustness
+> Pass^3 | Completion | Safety | Robustness
 
-A benchmark that grades AI agents on real-world UX/UI tasks — slide deck
+A benchmark that grades AI agents on real-world UX/UI tasks: slide deck
 generation, landing-page layout, design-system adherence, accessibility,
 responsive behavior, and more. Tasks are human-verified with fine-grained
 rubrics; agents are run three times and must pass all three to earn credit.
@@ -12,16 +12,16 @@ Inspired by and structured after [claw-eval](https://github.com/claw-eval/claw-e
 
 ## Status
 
-Scaffold — task set and graders are under active development. The current
+Scaffold: task set and graders are under active development. The current
 harness supports YAML task validation, deterministic static artifact checks,
-suite validation, JSON-based model-graded judge hooks, component-level
-verdicts, and Pass^k trial aggregation. See
-[`docs/benchmark_design.md`](docs/benchmark_design.md) for the benchmark
-mechanism notes behind the design.
+suite validation, optional HTML render snapshots for visual grading,
+JSON-based model-graded judge hooks, component-level verdicts, and Pass^k
+trial aggregation. See [`docs/benchmark_design.md`](docs/benchmark_design.md)
+for the benchmark mechanism notes behind the design.
 
 ## Layout
 
-```
+```text
 src/skills_benchmark_uxui/   # benchmark harness (cli, runner, graders, models)
 tasks/<id>/                  # one dir per task: task.yaml + grader.py
 suites/                      # benchmark suites that group comparable tasks
@@ -44,6 +44,13 @@ skills-benchmark-uxui validate
 bash scripts/test_sandbox.sh
 ```
 
+Install Playwright browsers if you want visual graders to capture screenshots:
+
+```bash
+uv pip install -e ".[web]"
+playwright install chromium
+```
+
 Run a benchmark:
 
 ```bash
@@ -61,23 +68,26 @@ skills-benchmark-uxui summarize-results results/verdicts.jsonl --format markdown
 
 ## Task categories
 
-| Split        | Focus                                                       |
-|--------------|-------------------------------------------------------------|
-| `slides`     | Presentation/slide generation (content + visual design)    |
-| `web`        | Landing pages, responsive layouts, design-system adherence |
-| `a11y`       | Accessibility, semantics, keyboard, contrast               |
-| `multi_turn` | Clarifying design intent through simulated user personas    |
+| Split        | Focus                                                      |
+|--------------|------------------------------------------------------------|
+| `slides`    | Presentation/slide generation (content + visual design)    |
+| `web`       | Landing pages, responsive layouts, design-system adherence |
+| `a11y`      | Accessibility, semantics, keyboard, contrast               |
+| `multi_turn`| Clarifying design intent through simulated user personas   |
 
 ## Scoring
 
-- **Pass^3** — a task counts as passed only if the agent passes in all 3 trials.
-- **Completion** — did the agent deliver the requested artifact?
-- **Safety** — did it avoid harmful/unauthorized actions?
-- **Robustness** — does it pass consistently across trials?
+- **Pass^3**: a task counts as passed only if the agent passes in all 3 trials.
+- **Completion**: did the agent deliver the requested artifact?
+- **Safety**: did it avoid harmful/unauthorized actions?
+- **Robustness**: does it pass consistently across trials?
 
 Each task declares weighted `scoring_components`; each component has a
 dimension, threshold, and check type. The harness reports per-component scores,
 dimension verdicts, Pass^k, success rate, and mean score.
+
+Visual grader components may also declare a `render` block for deterministic
+DOM checks and optional Playwright screenshot capture before LLM judging.
 
 ## License
 

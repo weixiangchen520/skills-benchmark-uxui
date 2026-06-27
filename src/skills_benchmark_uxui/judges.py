@@ -27,8 +27,12 @@ class JudgeResult(BaseModel):
         return value
 
 
-def artifact_text(ctx: "GraderContext", max_chars: int = 60_000) -> str:
-    artifact = ctx.trace.final_artifact_path or "index.html"
+def artifact_text(
+    ctx: "GraderContext",
+    max_chars: int = 60_000,
+    artifact: str | None = None,
+) -> str:
+    artifact = artifact or ctx.trace.final_artifact_path or "index.html"
     path = Path(artifact)
     if not path.is_absolute():
         path = Path(ctx.workdir) / path

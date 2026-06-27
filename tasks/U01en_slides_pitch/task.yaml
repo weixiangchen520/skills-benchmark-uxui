@@ -42,6 +42,12 @@ scoring_components:
     check:
       type: visual_grader
       description: "Coherent color/type/spacing; consistent across slides."
+      artifact: index.html
+      render:
+        viewport: {width: 1280, height: 720}
+        min_sections: 10
+        min_headings: 8
+        min_text_chars: 1200
   - name: readability
     weight: 0.20
     dimension: completion
@@ -49,6 +55,12 @@ scoring_components:
     check:
       type: visual_grader
       description: "Legible at projector scale; no wall-of-text slides."
+      artifact: index.html
+      render:
+        viewport: {width: 1280, height: 720}
+        min_sections: 10
+        min_headings: 8
+        min_text_chars: 1200
   - name: runs_standalone
     weight: 0.10
     dimension: robustness
