@@ -32,6 +32,15 @@ Research date: 2026-06-27.
   judging are useful, but judge prompts must account for position, verbosity,
   and self-enhancement biases.
   Source: https://arxiv.org/abs/2306.05685
+- Inspect AI: task composition around datasets, solvers, scorers, tool use,
+  sandboxing, and viewable logs.
+  Source: https://github.com/UKGovernmentBEIS/inspect_ai
+- Promptfoo: LLM rubric assertions with strict JSON output containing `reason`,
+  `score`, and `pass`, plus threshold semantics and CI-friendly reports.
+  Source: https://github.com/promptfoo/promptfoo
+- DeepEval: component-level and trace-oriented evaluation for apps and agents,
+  with G-Eval style custom metrics and pytest-like developer workflow.
+  Source: https://github.com/confident-ai/deepeval
 
 ## Adopted Mechanisms
 
@@ -64,21 +73,34 @@ Research date: 2026-06-27.
    metrics. This mirrors benchmark practices where task variants and splits must
    remain comparable across runs.
 
+7. Model-graded checks use a strict JSON contract.
+   The judge must return `{ "reason": string, "score": 0..1, "pass": boolean }`.
+   The harness enforces both the boolean verdict and the component threshold,
+   following Promptfoo's explicit pass-vs-score separation.
+
+8. Suites are validated separately from tasks.
+   Suite YAML files group comparable task IDs and primary metrics. This mirrors
+   HELM/lm-evaluation-harness grouping while keeping task definitions
+   independently reusable.
+
 ## Current Gaps
 
-- `llm_judge` and `visual_grader` are still placeholders.
+- `llm_judge` now has a strict JSON protocol and OpenAI-compatible adapter, but
+  benchmark-quality prompt calibration and judge meta-evaluation are still
+  missing.
+- `visual_grader` currently uses the same text artifact judge path; it does not
+  yet capture rendered screenshots.
 - The agent runner is not wired to provider calls or sandbox execution.
-- Result persistence is not implemented beyond CLI JSON output.
 - Browser/Playwright rendering checks are not implemented yet.
-- No leaderboard or suite-level report generator exists yet.
+- Suite-level Markdown/JSON reports exist for verdict JSONL, but no web
+  leaderboard exists yet.
 
 ## Near-Term Implementation Path
 
-1. Add a judge prompt contract that returns strict JSON with component score,
-   pass/fail, and rationale.
+1. Meta-evaluate the judge prompt against labelled artifacts.
 2. Add Playwright rendering for HTML artifacts and screenshot capture.
-3. Persist per-trial traces and verdict JSONL under `traces/` and `results/`.
-4. Add suite-level aggregation across tasks and model IDs.
+3. Persist full agent traces under `traces/`, not only verdicts.
+4. Add suite-level aggregation across task weights and model IDs.
 5. Add sandbox adapters for local, Docker, and browser-backed tasks.
 
 Part of item 3 is already present: `score-artifact --output` can write per-trial

@@ -1,0 +1,10 @@
+suite_id: uxui_dev
+suite_name: UX/UI Development Smoke Suite
+version: "0.1"
+description: Small suite for validating benchmark mechanics before broad task expansion.
+tasks:
+  - U01en_slides_pitch
+primary_metrics:
+  - pass_k
+  - success_rate
+  - mean_score

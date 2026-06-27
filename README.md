@@ -14,7 +14,8 @@ Inspired by and structured after [claw-eval](https://github.com/claw-eval/claw-e
 
 Scaffold — task set and graders are under active development. The current
 harness supports YAML task validation, deterministic static artifact checks,
-component-level verdicts, and Pass^k trial aggregation. See
+suite validation, JSON-based model-graded judge hooks, component-level
+verdicts, and Pass^k trial aggregation. See
 [`docs/benchmark_design.md`](docs/benchmark_design.md) for the benchmark
 mechanism notes behind the design.
 
@@ -23,6 +24,7 @@ mechanism notes behind the design.
 ```
 src/skills_benchmark_uxui/   # benchmark harness (cli, runner, graders, models)
 tasks/<id>/                  # one dir per task: task.yaml + grader.py
+suites/                      # benchmark suites that group comparable tasks
 mock_services/               # stub servers the agent talks to (optional)
 scripts/                     # sandbox + validation helpers
 config_*.yaml                # eval configs (model, judge, defaults)
@@ -54,6 +56,7 @@ Score an existing artifact directory:
 skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run
 skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run --output results/verdicts.jsonl --append
 skills-benchmark-uxui summarize-results results/verdicts.jsonl --required-trials 3
+skills-benchmark-uxui summarize-results results/verdicts.jsonl --format markdown
 ```
 
 ## Task categories

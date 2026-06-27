@@ -1,5 +1,10 @@
 from skills_benchmark_uxui.models.scoring import Verdict
-from skills_benchmark_uxui.results import load_verdicts, summarize_by_task, write_verdict
+from skills_benchmark_uxui.results import (
+    load_verdicts,
+    summaries_to_markdown,
+    summarize_by_task,
+    write_verdict,
+)
 
 
 def test_write_load_and_summarize_verdicts(tmp_path) -> None:
@@ -13,3 +18,4 @@ def test_write_load_and_summarize_verdicts(tmp_path) -> None:
     assert len(verdicts) == 2
     assert summaries["U01en_demo"].pass_k is False
     assert summaries["U01en_demo"].success_rate == 0.5
+    assert "| `U01en_demo` | 2/2 | no | 0.500 | 0.500 |" in summaries_to_markdown(summaries)

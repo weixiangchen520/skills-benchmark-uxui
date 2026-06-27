@@ -20,6 +20,7 @@ trials pass (Pass^3).
   - `graders/` — `base.py`, `registry.py`, `llm_judge.py`, `visual_grader.py`.
   - `models/` — pydantic schemas: `task.py`, `trace.py`, `scoring.py`.
 - `tasks/<id>/{task.yaml,grader.py}` — one dir per task.
+- `suites/*.yaml` — suites that group comparable task IDs.
 - `mock_services/` — optional FastAPI stub servers the agent calls.
 - `scripts/` — `test_sandbox.sh`, `validate_tasks.py`.
 - `docs/` — benchmark design notes and research-backed implementation choices.

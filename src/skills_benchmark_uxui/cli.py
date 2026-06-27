@@ -14,9 +14,16 @@ from pathlib import Path
 
 from .config import load_config
 from .graders import score_trace
+from .judges import create_judge_client
 from .models.trace import Trace
 from .models.task import load_task
-from .results import load_verdicts, summaries_to_json, summarize_by_task, write_verdict
+from .results import (
+    load_verdicts,
+    summaries_to_json,
+    summaries_to_markdown,
+    summarize_by_task,
+    write_verdict,
+)
 
 
 def _cmd_batch(args: argparse.Namespace) -> int:
@@ -36,14 +43,20 @@ def _cmd_batch(args: argparse.Namespace) -> int:
 
 def _cmd_validate(args: argparse.Namespace) -> int:
     from .tasks_loader import validate_all
+    from .suites_loader import validate_suites
 
     ok = validate_all(Path(args.tasks_dir))
+    if args.suites_dir:
+        ok = validate_suites(Path(args.suites_dir), Path(args.tasks_dir)) and ok
     return 0 if ok else 1
 
 
 def _cmd_score_artifact(args: argparse.Namespace) -> int:
     task_dir = Path(args.tasks_dir) / args.task_id
     task = load_task(task_dir / "task.yaml")
+    judge_client = None
+    if args.config:
+        judge_client = create_judge_client(load_config(args.config).judge)
     trace = Trace(
         task_id=task.task_id,
         trial=args.trial,
@@ -55,6 +68,7 @@ def _cmd_score_artifact(args: argparse.Namespace) -> int:
         task_dir=task_dir,
         trace=trace,
         workdir=Path(args.workdir),
+        judge_client=judge_client,
     )
     if args.output:
         write_verdict(Path(args.output), verdict, append=args.append)
@@ -65,7 +79,10 @@ def _cmd_score_artifact(args: argparse.Namespace) -> int:
 def _cmd_summarize_results(args: argparse.Namespace) -> int:
     verdicts = load_verdicts(Path(args.verdicts_jsonl))
     summaries = summarize_by_task(verdicts, required_trials=args.required_trials)
-    print(summaries_to_json(summaries))
+    if args.format == "markdown":
+        print(summaries_to_markdown(summaries), end="")
+    else:
+        print(summaries_to_json(summaries))
     return 0
 
 
@@ -83,6 +100,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     v = sub.add_parser("validate", help="Validate every task.yaml under tasks/")
     v.add_argument("--tasks-dir", default="tasks")
+    v.add_argument("--suites-dir", default="suites")
     v.set_defaults(func=_cmd_validate)
 
     s = sub.add_parser("score-artifact", help="Score an existing artifact directory for one task")
@@ -92,6 +110,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--artifact", default="index.html", help="Artifact path relative to workdir")
     s.add_argument("--trial", type=int, default=1)
     s.add_argument("--model-id", default="manual")
+    s.add_argument("--config", default=None, help="Optional config_*.yaml for judge settings")
     s.add_argument("--output", default=None, help="Optional JSONL file to write the verdict to")
     s.add_argument("--append", action="store_true", help="Append to --output instead of replacing it")
     s.set_defaults(func=_cmd_score_artifact)
@@ -99,6 +118,7 @@ def build_parser() -> argparse.ArgumentParser:
     r = sub.add_parser("summarize-results", help="Summarize per-trial verdict JSONL")
     r.add_argument("verdicts_jsonl")
     r.add_argument("--required-trials", type=int, default=3)
+    r.add_argument("--format", choices=["json", "markdown"], default="json")
     r.set_defaults(func=_cmd_summarize_results)
     return parser
 

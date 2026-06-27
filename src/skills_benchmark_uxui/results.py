@@ -51,3 +51,32 @@ def summaries_to_json(summaries: dict[str, RunSummary]) -> str:
         indent=2,
         default=str,
     )
+
+
+def summaries_to_markdown(summaries: dict[str, RunSummary]) -> str:
+    lines = [
+        "# Benchmark Summary",
+        "",
+        "| Task | Trials | Pass^k | Success Rate | Mean Score |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for task_id, summary in summaries.items():
+        pass_k = "yes" if summary.pass_k else "no"
+        lines.append(
+            f"| `{task_id}` | {summary.trials}/{summary.required_trials} | {pass_k} | "
+            f"{summary.success_rate:.3f} | {summary.mean_score:.3f} |"
+        )
+
+    lines.extend(["", "## Component Pass Rates", ""])
+    for task_id, summary in summaries.items():
+        lines.append(f"### `{task_id}`")
+        if not summary.component_pass_rates:
+            lines.append("")
+            lines.append("No component scores recorded.")
+            lines.append("")
+            continue
+        lines.extend(["", "| Component | Pass Rate |", "|---|---:|"])
+        for component, pass_rate in sorted(summary.component_pass_rates.items()):
+            lines.append(f"| `{component}` | {pass_rate:.3f} |")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
