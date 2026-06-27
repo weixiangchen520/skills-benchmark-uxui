@@ -62,6 +62,7 @@ Score an existing artifact directory:
 ```bash
 skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run
 skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run --output results/verdicts.jsonl --append
+skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run --trace-dir traces
 skills-benchmark-uxui summarize-results results/verdicts.jsonl --required-trials 3
 skills-benchmark-uxui summarize-results results/verdicts.jsonl --format markdown
 ```

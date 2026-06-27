@@ -70,6 +70,8 @@ Research date: 2026-06-27.
 4. Trace and artifact scoring are separate from agent execution.
    The harness can score an existing artifact directory now. A future agent
    runner can plug in by producing the same Trace and artifact contract.
+   `score-artifact` can persist both verdict JSONL and trace JSON files so
+   runs remain inspectable after aggregation.
 
 5. Deterministic checks run before expensive judges where possible.
    Static checks cover artifact existence, self-contained HTML, required text,
@@ -105,7 +107,8 @@ Research date: 2026-06-27.
   missing.
 - `visual_grader` now captures render snapshots when Playwright is available,
   but screenshot quality is not yet compared against labelled references.
-- The agent runner is not wired to provider calls or sandbox execution.
+- The agent runner is not wired to provider calls or sandbox execution, so
+  traces currently come from scored artifacts rather than live model sessions.
 - Browser/Playwright rendering is optional; the package does not yet install
   browser binaries or persist Playwright trace archives automatically.
 - Suite-level Markdown/JSON reports exist for verdict JSONL, but no web
@@ -114,10 +117,11 @@ Research date: 2026-06-27.
 ## Near-Term Implementation Path
 
 1. Meta-evaluate the judge prompt against labelled artifacts.
-2. Persist full agent traces under `traces/`, not only verdicts.
-3. Add Playwright trace archive capture alongside screenshots.
-4. Add suite-level aggregation across task weights and model IDs.
-5. Add sandbox adapters for local, Docker, and browser-backed tasks.
+2. Add Playwright trace archive capture alongside screenshots.
+3. Add suite-level aggregation across task weights and model IDs.
+4. Add sandbox adapters for local, Docker, and browser-backed tasks.
+5. Wire the runner to provider calls while emitting the same trace schema.
 
-Part of item 3 is already present: `score-artifact --output` can write per-trial
-verdict JSONL, and `summarize-results` aggregates those verdicts by task.
+Part of the result path is already present: `score-artifact --output` can write
+per-trial verdict JSONL, `score-artifact --trace-dir` can write per-trial trace
+JSON, and `summarize-results` aggregates verdicts by task.

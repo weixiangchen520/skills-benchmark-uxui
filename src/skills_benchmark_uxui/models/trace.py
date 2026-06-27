@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -14,7 +14,7 @@ class TrajectoryStep(BaseModel):
     content: str = ""
     tool_call: dict | None = None
     tool_result: Any | None = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class Trace(BaseModel):

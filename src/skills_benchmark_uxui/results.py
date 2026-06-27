@@ -5,8 +5,17 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from pathlib import Path
+import re
 
 from .models.scoring import RunSummary, Verdict, aggregate_verdicts
+from .models.trace import Trace
+
+_PATH_SAFE = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def _path_slug(value: str) -> str:
+    slug = _PATH_SAFE.sub("_", value).strip("._-")
+    return slug or "unknown"
 
 
 def write_verdict(path: Path, verdict: Verdict, append: bool = True) -> None:
@@ -29,6 +38,19 @@ def load_verdicts(path: Path) -> list[Verdict]:
             except Exception as exc:  # noqa: BLE001
                 raise ValueError(f"invalid verdict JSON on line {line_number}: {exc}") from exc
     return verdicts
+
+
+def default_trace_path(root: Path, trace: Trace) -> Path:
+    return root / trace.task_id / _path_slug(trace.model_id) / f"trial-{trace.trial:03d}.json"
+
+
+def write_trace(path: Path, trace: Trace) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(trace.model_dump_json(indent=2), encoding="utf-8")
+
+
+def load_trace(path: Path) -> Trace:
+    return Trace.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def summarize_by_task(

@@ -18,10 +18,12 @@ from .judges import create_judge_client
 from .models.trace import Trace
 from .models.task import load_task
 from .results import (
+    default_trace_path,
     load_verdicts,
     summaries_to_json,
     summaries_to_markdown,
     summarize_by_task,
+    write_trace,
     write_verdict,
 )
 
@@ -72,6 +74,10 @@ def _cmd_score_artifact(args: argparse.Namespace) -> int:
     )
     if args.output:
         write_verdict(Path(args.output), verdict, append=args.append)
+    if args.trace_output:
+        write_trace(Path(args.trace_output), trace)
+    if args.trace_dir:
+        write_trace(default_trace_path(Path(args.trace_dir), trace), trace)
     print(verdict.model_dump_json(indent=2))
     return 0 if verdict.passed else 1
 
@@ -113,6 +119,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--config", default=None, help="Optional config_*.yaml for judge settings")
     s.add_argument("--output", default=None, help="Optional JSONL file to write the verdict to")
     s.add_argument("--append", action="store_true", help="Append to --output instead of replacing it")
+    s.add_argument("--trace-output", default=None, help="Optional JSON file to write the trace to")
+    s.add_argument(
+        "--trace-dir",
+        default=None,
+        help="Optional root directory for traces/<task>/<model>/trial-NNN.json output",
+    )
     s.set_defaults(func=_cmd_score_artifact)
 
     r = sub.add_parser("summarize-results", help="Summarize per-trial verdict JSONL")
