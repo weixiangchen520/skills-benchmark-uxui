@@ -22,6 +22,7 @@ trials pass (Pass^3).
 - `tasks/<id>/{task.yaml,grader.py}` — one dir per task.
 - `mock_services/` — optional FastAPI stub servers the agent calls.
 - `scripts/` — `test_sandbox.sh`, `validate_tasks.py`.
+- `docs/` — benchmark design notes and research-backed implementation choices.
 - `config_*.yaml` — model + judge + defaults. **Never commit API keys**;
   keep them in env vars or `configs/local/` (gitignored).
 
@@ -43,6 +44,8 @@ uv pip install -e ".[dev]"          # editable install with dev extras
 ruff check src tasks                # lint
 pytest                              # tests (TBD)
 skills-benchmark-uxui batch --config config_general.yaml --trials 3 --parallel 8
+skills-benchmark-uxui score-artifact U01en_slides_pitch --workdir path/to/run
+skills-benchmark-uxui summarize-results results/verdicts.jsonl --required-trials 3
 python scripts/validate_tasks.py   # sanity-check every task.yaml
 ```
 

@@ -1,9 +1,18 @@
-from .task import Task, ScoringComponent, TaskEnvironment
+from .task import AggregationConfig, ScoringComponent, SourceReference, Task, TaskEnvironment
 from .trace import Trace, TrajectoryStep
-from .scoring import Score, Verdict, Dimension
+from .scoring import Dimension, RunSummary, Score, Verdict, aggregate_verdicts
 
 __all__ = [
-    "Task", "ScoringComponent", "TaskEnvironment",
-    "Trace", "TrajectoryStep",
-    "Score", "Verdict", "Dimension",
+    "AggregationConfig",
+    "Task",
+    "ScoringComponent",
+    "SourceReference",
+    "TaskEnvironment",
+    "Trace",
+    "TrajectoryStep",
+    "Score",
+    "Verdict",
+    "RunSummary",
+    "Dimension",
+    "aggregate_verdicts",
 ]

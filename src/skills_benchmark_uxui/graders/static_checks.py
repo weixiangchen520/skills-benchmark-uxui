@@ -37,6 +37,17 @@ def static_check(check: dict, ctx) -> tuple[bool, float, str]:
         if _NETWORK_REF.search(text):
             failures.append(f"{path.name} references external network assets")
 
+    for required in check.get("must_include", []):
+        if required.lower() not in text.lower():
+            failures.append(f"{path.name} does not include required text: {required}")
+
+    for needle, minimum in check.get("min_occurrences", {}).items():
+        actual = text.lower().count(str(needle).lower())
+        if actual < int(minimum):
+            failures.append(
+                f"{path.name} includes {needle!r} {actual} time(s), expected at least {minimum}"
+            )
+
     if failures:
         return False, 0.0, "; ".join(failures)
     return True, 1.0, f"static assertions passed for {path.name}"

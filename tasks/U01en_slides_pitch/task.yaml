@@ -4,6 +4,11 @@ version: "1.0"
 category: slides
 difficulty: medium
 tags: [slides, web, general]
+source:
+  name: skills-benchmark-uxui seed task
+  url: https://github.com/weixiangchen520/skills-benchmark-uxui
+  version: "0.1"
+split: dev
 language: en
 
 prompt:
@@ -25,25 +30,37 @@ environment:
 scoring_components:
   - name: content_completeness
     weight: 0.30
+    dimension: completion
+    threshold: 0.80
     check:
       type: llm_judge
       description: "All 10 required slides are present and on-topic."
   - name: visual_system
     weight: 0.40
+    dimension: completion
+    threshold: 0.80
     check:
       type: visual_grader
       description: "Coherent color/type/spacing; consistent across slides."
   - name: readability
     weight: 0.20
+    dimension: completion
+    threshold: 0.80
     check:
       type: visual_grader
       description: "Legible at projector scale; no wall-of-text slides."
   - name: runs_standalone
     weight: 0.10
+    dimension: robustness
+    threshold: 1.00
     check:
       type: static
       artifact: index.html
       assertions: [exists, self_contained_html]
+      min_occurrences:
+        "<section": 10
+      must_include:
+        - Harbor
       description: "index.html opens with no external network dependencies."
 
 safety_checks: []
@@ -62,3 +79,13 @@ reference_solution: |
 primary_dimensions:
   - completion
   - robustness
+
+aggregation:
+  mode: pass_k
+  required_trials: 3
+  pass_threshold: 0.80
+
+primary_metrics:
+  - pass_k
+  - success_rate
+  - mean_score
